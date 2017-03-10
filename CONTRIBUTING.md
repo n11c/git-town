@@ -13,7 +13,7 @@ This guide will help you get started and outline some things you should know whe
 ## Setup
 
 * fork and clone the repository to your machine
-* install [Ruby 2.2.3](https://www.ruby-lang.org/en/documentation/installation) to run the feature tests
+* install [Ruby 2.3.1](https://www.ruby-lang.org/en/documentation/installation) to run the feature tests
   * prefer install with [rbenv](https://github.com/sstephenson/rbenv)
 * install [ShellCheck](https://github.com/koalaman/shellcheck) for linting the bash scripts
 * run `bundle` to install ruby gems

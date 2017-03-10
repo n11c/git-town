@@ -60,3 +60,12 @@ Feature: git-new-pull-request when origin is on GitHub
     And I am on the "feature" branch
     When I run `git town-new-pull-request` and press ENTER
     Then I see a new GitHub pull request for the "feature" branch in the "Originate/git-town" repo in my browser
+
+
+  Scenario: an additional remote name containts the word 'origin' in it
+    Given I have a feature branch named "feature"
+    And I am on the "feature" branch
+    And my remote origin is https://github.com/Originate/Chatbot-Platform.git
+    And a "heroku" remote at https://git.heroku.com/originate-chat-platform.git
+    When I run `git town-new-pull-request`
+    Then I see a new GitHub pull request for the "feature" branch in the "Originate/Chatbot-Platform" repo in my browser

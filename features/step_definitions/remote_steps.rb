@@ -13,3 +13,8 @@ end
 Given(/^my remote origin is (.+?)$/) do |origin|
   run "git config git-town.testing.remote-url #{origin}"
 end
+
+
+Given(/^a "([^"]*)" remote at (.+?)$/) do |remote_name, remote_url|
+  run "git remote add #{remote_name} #{remote_url}"
+end
