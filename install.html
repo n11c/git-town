@@ -15,69 +15,55 @@ toggle.onclick = function(){
 
     menu.className = classes.join(' ');
   }
-}</script></header><h1 class="pagetitle">Install GitTown</h1><main><p>Git Town runs anywhere Git and <a href="https://www.gnu.org/software/bash/bash.html">Bash</a> run.</p>
-<table>
-  <tr>
-    <th width="300px">
-      Using <a href="http://brew.sh">Homebrew</a>
-    </th>
-    <th width="400px">
-      Manually
-    </th>
-  </tr>
-  <tr class="subhead">
-    <td colspan="2">
-      <b>Install</b>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <code>brew install git-town</code>
-    </td>
-    <td>
-      <ul>
-        <li>clone the repo to your machine (into DIR)</li>
-        <li>add DIR/src to your <code>$PATH</code></li>
-        <li>add DIR/man to your <code>$MANPATH</code></li>
-      </ul>
-    </td>
-  </tr>
-  <tr class="subhead">
-    <td colspan="2">
-      <b>Update</b>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <code>brew update</code><br>
-      <code>brew upgrade git-town</code>
-    </td>
-    <td>
-      <ul>
-        <li>run <code>git pull</code> in DIR</li>
-      </ul>
-    </td>
-  </tr>
-  <tr class="subhead">
-    <td colspan="2">
-      <b>Uninstall</b>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <code>brew uninstall git-town</code><br>
-    </td>
-    <td>
-      <ul>
-        <li>remove DIR</li>
-        <li>remove DIR/src from your <code>$PATH</code></li>
-        <li>remove DIR/man from your <code>$MANPATH</code></li>
-      </ul>
-    </td>
-  </tr>
-</table>
-
-
+}</script></header><h1 class="pagetitle">Install GitTown</h1><main><p>Git Town runs anywhere Git runs.</p>
+<h1>Mac (using <a href="http://brew.sh">Homebrew</a>)</h1><ul>
+<li>Install: run <code>brew install git-town</code></li>
+<li>Update: run <code>brew update</code> and then run <code>brew upgrade git-town</code></li>
+<li>Uninstall: run <code>brew uninstall git-town</code></li>
+</ul>
+<p><em>Note: <code>4.0.0</code> dropped support for Yosemite because we now specify a minimum Git version of 2.6.0,
+which is higher than the default version installed on that OS.
+If you would like to use Git Town on Yosemite, 
+please use the manual install and ensure your Git version is 2.6.0 or higher.</em></p>
+<hr>
+<h1>Arch Linux</h1><ul>
+<li>Install / Update: install <a href="https://aur.archlinux.org/packages/git-town/">git-town</a> from the AUR<ul>
+<li>You may use your favorite AUR helper</li>
+<li>Alternatively, you can install manually from the AUR by:<ul>
+<li>downloading the latest tarball <a href="https://aur.archlinux.org/packages/git-town/">from this page</a></li>
+<li>unpacking the tarball</li>
+<li><code>cd</code> into the newly unpacked directory, and running <code>makepkg -si</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Uninstall: run <code>pacman -R git-town</code></li>
+</ul>
+<hr>
+<h1>Debian/Ubuntu based distros</h1><ul>
+<li>Install / Update:<ul>
+<li>Download the deb file from the latest release <a href="https://github.com/Originate/git-town/releases">here</a>.</li>
+<li>Run <code>dpkg -i /path/to/debfile</code></li>
+</ul>
+</li>
+<li>Uninstall: run <code>apt-get remove git-town</code></li>
+</ul>
+<hr>
+<h1>Manual</h1><ul>
+<li>Install: download the Git Town binary for your platform from the
+<a href="https://github.com/Originate/git-town/releases">releases page</a>,
+rename it to <code>git-town</code>,
+and put it somewhere in your <code>$PATH</code></li>
+<li>Update: install the new version over the old version</li>
+<li>Uninstall:<ul>
+<li>remove Git Town&#39;s aliases: <code>git town alias false</code></li>
+<li>remove the Git Town configuration from your repositories:
+in each repo, run <code>git town config --reset</code></li>
+<li>delete the <code>git-town</code> binary from your hard drive</li>
+</ul>
+</li>
+</ul>
+<hr>
 <h4>Install autocompletion</h4><ul>
 <li>for <a href="http://fishshell.com">Fish shell</a>: <code>git town install-fish-autocompletion</code></li>
 </ul>

@@ -25,7 +25,7 @@ Since we are developing in feature branches, you now need to</p>
 <li>update your master branch to the latest version on GitHub</li>
 <li>cut a new feature branch from the master branch</li>
 </ul>
-<p>Running <code>git hack reset-passwords</code> achieves all this in a single command.
+<p>Running <code>git town-hack reset-passwords</code> achieves all this in a single command.
 This gives you the best possible start for building the new feature,
 on top of the latest version of the code base.</p>
 <h2>Synchronizing the branch</h2><p>After coding for a while you hear that Bob shipped a number of important bug fixes,
@@ -42,12 +42,12 @@ which means you also need to stash away any currently open changes in your repo 
 Altogether this simple operation requires between 5 and 7 individual Git commands.
 That&#39;s a lot of typing.
 And this can (should) happen several times per day, for each of your feature branches!</p>
-<p><code>git sync</code> runs this whole process with a single command and brings you back to exactly where you started.</p>
+<p><code>git town-sync</code> runs this whole process with a single command and brings you back to exactly where you started.</p>
 <p>With Bob&#39;s bug fixes and the new UI from Carol available in your branch,
 any more modification you make go right on top of their work.</p>
 <h2>Creating a pull request</h2><p>Once your feature is ready for review, it&#39;s time to open a pull request on GitHub.
 You fire up a browser, go to GitHub, navigate to your repository and finally end up on a new pull request form.</p>
-<p><code>git new-pull-request</code> lets you jump straight from the terminal to filling in the details of your pull request in your browser.
+<p><code>git town-new-pull-request</code> lets you jump straight from the terminal to filling in the details of your pull request in your browser.
 Your current branch is already selected,
 so all you need to do is fill out the title and description,
 tag the reviewers, and submit.</p>
@@ -67,7 +67,7 @@ and to give you a chance to resolve any issues before merging into <em>master</e
 </ul>
 <p>This requires between 10-15 individual Git commands.
 Git Town provides a single, convenient command for this as well:
-<code>git ship reset-passwords</code>.</p>
+<code>git town-ship reset-passwords</code>.</p>
 <p>After running this, your feature is now safely merged as a single additional commit on the <em>master</em> branch,
 the old feature branch is cleaned up everywhere,
 and you and the repository are ready for the next feature.</p></main></body></html>
