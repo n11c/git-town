@@ -17,34 +17,12 @@ import (
 	"github.com/Originate/git-town/src/util"
 )
 
+var configMap *ConfigMap
+var globalConfigMap *ConfigMap
+
 // AddToPerennialBranches adds the given branch as a perennial branch
 func AddToPerennialBranches(branchName string) {
 	SetPerennialBranches(append(GetPerennialBranches(), branchName))
-}
-
-// CompileAncestorBranches calculates and returns the list of ancestor branches
-// of the given branch based off the "git-town-branch.XXX.parent" configuration values.
-func CompileAncestorBranches(branchName string) (result []string) {
-	current := branchName
-	for {
-		if IsMainBranch(current) || IsPerennialBranch(current) {
-			return
-		}
-		parent := GetParentBranch(current)
-		if parent == "" {
-			return
-		}
-		result = append([]string{parent}, result...)
-		current = parent
-	}
-}
-
-// DeleteAllAncestorBranches removes all Git Town ancestor entries
-// for all branches from the configuration.
-func DeleteAllAncestorBranches() {
-	for _, key := range getConfigurationKeysMatching("^git-town-branch\\..*\\.ancestors$") {
-		removeConfigurationValue(key)
-	}
 }
 
 // DeleteParentBranch removes the parent branch entry for the given branch
@@ -59,22 +37,40 @@ func EnsureIsFeatureBranch(branchName, errorSuffix string) {
 }
 
 // GetAncestorBranches returns the names of all parent branches for the given branch,
-// beginning but not including the parennial branch from which this hierarchy was cut.
 // This information is read from the cache in the Git config,
 // so might be out of date when the branch hierarchy has been modified.
-func GetAncestorBranches(branchName string) []string {
-	value := getLocalConfigurationValue("git-town-branch." + branchName + ".ancestors")
-	if value == "" {
-		return []string{}
+func GetAncestorBranches(branchName string) (result []string) {
+	parentBranchMap := GetParentBranchMap()
+	current := branchName
+	for {
+		if IsMainBranch(current) || IsPerennialBranch(current) {
+			return
+		}
+		parent := parentBranchMap[current]
+		if parent == "" {
+			return
+		}
+		result = append([]string{parent}, result...)
+		current = parent
 	}
-	return strings.Split(value, " ")
+}
+
+// GetParentBranchMap returns a map from branch name to its parent branch
+func GetParentBranchMap() map[string]string {
+	result := map[string]string{}
+	for _, key := range getConfigurationKeysMatching("^git-town-branch\\..*\\.parent$") {
+		child := strings.TrimSuffix(strings.TrimPrefix(key, "git-town-branch."), ".parent")
+		parent := GetConfigurationValue(key)
+		result[child] = parent
+	}
+	return result
 }
 
 // GetChildBranches returns the names of all branches for which the given branch
 // is a parent.
 func GetChildBranches(branchName string) (result []string) {
 	for _, key := range getConfigurationKeysMatching("^git-town-branch\\..*\\.parent$") {
-		parent := getLocalConfigurationValue(key)
+		parent := GetConfigurationValue(key)
 		if parent == branchName {
 			child := strings.TrimSuffix(strings.TrimPrefix(key, "git-town-branch."), ".parent")
 			result = append(result, child)
@@ -86,30 +82,27 @@ func GetChildBranches(branchName string) (result []string) {
 // GetConfigurationValue returns the given configuration value,
 // from either global or local Git configuration
 func GetConfigurationValue(key string) (result string) {
-	return command.New("git", "config", key).Output()
+	return configMap.Get(key)
 }
 
 // GetGlobalConfigurationValue returns the global git configuration value for the given key
-func GetGlobalConfigurationValue(key string) (result string) {
-	if hasConfigurationValue("global", key) {
-		result = command.New("git", "config", "--global", key).Output()
-	}
-	return
+func GetGlobalConfigurationValue(key string) string {
+	return globalConfigMap.Get(key)
 }
 
 // GetMainBranch returns the name of the main branch.
 func GetMainBranch() string {
-	return getLocalConfigurationValue("git-town.main-branch-name")
+	return GetConfigurationValue("git-town.main-branch-name")
 }
 
 // GetParentBranch returns the name of the parent branch of the given branch.
 func GetParentBranch(branchName string) string {
-	return getLocalConfigurationValue("git-town-branch." + branchName + ".parent")
+	return GetConfigurationValue("git-town-branch." + branchName + ".parent")
 }
 
 // GetPerennialBranches returns all branches that are marked as perennial.
 func GetPerennialBranches() []string {
-	result := getLocalConfigurationValue("git-town.perennial-branch-names")
+	result := GetConfigurationValue("git-town.perennial-branch-names")
 	if result == "" {
 		return []string{}
 	}
@@ -118,14 +111,14 @@ func GetPerennialBranches() []string {
 
 // GetPullBranchStrategy returns the currently configured pull branch strategy.
 func GetPullBranchStrategy() string {
-	return getLocalConfigurationValueWithDefault("git-town.pull-branch-strategy", "rebase")
+	return getConfigurationValueWithDefault("git-town.pull-branch-strategy", "rebase")
 }
 
 // GetRemoteOriginURL returns the URL for the "origin" remote.
 // In tests this value can be stubbed.
 func GetRemoteOriginURL() string {
 	if os.Getenv("GIT_TOWN_ENV") == "test" {
-		mockRemoteURL := getLocalConfigurationValue("git-town.testing.remote-url")
+		mockRemoteURL := GetConfigurationValue("git-town.testing.remote-url")
 		if mockRemoteURL != "" {
 			return mockRemoteURL
 		}
@@ -166,22 +159,21 @@ func HasGlobalConfigurationValue(key string) bool {
 	return command.New("git", "config", "-l", "--global", "--name").OutputContainsLine(key)
 }
 
-// IsAncestorBranch returns whether the given branch is an ancestor of the other given branch.
-func IsAncestorBranch(branchName, ancestorBranchName string) bool {
-	ancestorBranches := CompileAncestorBranches(branchName)
-	return util.DoesStringArrayContain(ancestorBranches, ancestorBranchName)
+// HasParentBranch returns whether or not the given branch has a parent
+func HasParentBranch(branchName string) bool {
+	return GetParentBranch(branchName) != ""
 }
 
-// HasCompiledAncestorBranches returns whether the Git Town configuration
-// contains a cached ancestor list for the branch with the given name.
-func HasCompiledAncestorBranches(branchName string) bool {
-	return len(GetAncestorBranches(branchName)) > 0
+// IsAncestorBranch returns whether the given branch is an ancestor of the other given branch.
+func IsAncestorBranch(branchName, ancestorBranchName string) bool {
+	ancestorBranches := GetAncestorBranches(branchName)
+	return util.DoesStringArrayContain(ancestorBranches, ancestorBranchName)
 }
 
 // HasRemote returns whether the current repository contains a Git remote
 // with the given name.
 func HasRemote(name string) bool {
-	return command.New("git", "remote").OutputContainsLine(name)
+	return util.DoesStringArrayContain(getRemotes(), name)
 }
 
 // IsFeatureBranch returns whether the branch with the given name is
@@ -213,12 +205,6 @@ func RemoveFromPerennialBranches(branchName string) {
 	SetPerennialBranches(util.RemoveStringFromSlice(GetPerennialBranches(), branchName))
 }
 
-// SetAncestorBranches stores the given list of branches as ancestors
-// for the given branch in the Git Town configuration.
-func SetAncestorBranches(branchName string, ancestorBranches []string) {
-	setConfigurationValue("git-town-branch."+branchName+".ancestors", strings.Join(ancestorBranches, " "))
-}
-
 // SetMainBranch marks the given branch as the main branch
 // in the Git Town configuration.
 func SetMainBranch(branchName string) {
@@ -241,10 +227,16 @@ func SetPullBranchStrategy(strategy string) {
 	setConfigurationValue("git-town.pull-branch-strategy", strategy)
 }
 
-// ShouldHackPush returns whether the current repository is configured to push
+// ShouldNewBranchPush returns whether the current repository is configured to push
 // freshly created branches up to the origin remote.
-func ShouldHackPush() bool {
-	return util.StringToBool(getLocalConfigurationValueWithDefault("git-town.hack-push-flag", "false"))
+func ShouldNewBranchPush() bool {
+	return util.StringToBool(getConfigurationValueWithDefault("git-town.new-branch-push-flag", "false"))
+}
+
+// GetGlobalNewBranchPushFlag returns the global configuration for to push
+// freshly created branches up to the origin remote.
+func GetGlobalNewBranchPushFlag() string {
+	return getGlobalConfigurationValueWithDefault("git-town.new-branch-push-flag", "false")
 }
 
 // UpdateOffline updates whether Git Town is in offline mode
@@ -252,13 +244,27 @@ func UpdateOffline(value bool) {
 	setGlobalConfigurationValue("git-town.offline", strconv.FormatBool(value))
 }
 
-// UpdateShouldHackPush updates whether the current repository is configured to push
+// UpdateShouldNewBranchPush updates whether the current repository is configured to push
 // freshly created branches up to the origin remote.
-func UpdateShouldHackPush(value bool) {
-	setConfigurationValue("git-town.hack-push-flag", strconv.FormatBool(value))
+func UpdateShouldNewBranchPush(value bool) {
+	setConfigurationValue("git-town.new-branch-push-flag", strconv.FormatBool(value))
+}
+
+// UpdateGlobalShouldNewBranchPush updates global whether to push
+// freshly created branches up to the origin remote.
+func UpdateGlobalShouldNewBranchPush(value bool) {
+	setGlobalConfigurationValue("git-town.new-branch-push-flag", strconv.FormatBool(value))
 }
 
 // Helpers
+
+func getGlobalConfigurationValueWithDefault(key, defaultValue string) string {
+	value := GetGlobalConfigurationValue(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
 
 func getConfigurationValueWithDefault(key, defaultValue string) string {
 	value := GetConfigurationValue(key)
@@ -268,47 +274,43 @@ func getConfigurationValueWithDefault(key, defaultValue string) string {
 	return value
 }
 
-// getLocalConfigurationValue returns the given configuration value
-// only from the local Git configuration
-func getLocalConfigurationValue(key string) (result string) {
-	if hasConfigurationValue("local", key) {
-		result = command.New("git", "config", "--local", key).Output()
-	}
-	return
-}
-
-func getLocalConfigurationValueWithDefault(key, defaultValue string) string {
-	value := getLocalConfigurationValue(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
-}
-
 func getConfigurationKeysMatching(toMatch string) (result []string) {
-	configRegexp, err := regexp.Compile(toMatch)
+	re, err := regexp.Compile(toMatch)
 	exit.IfWrapf(err, "Error compiling configuration regular expression (%s): %v", toMatch, err)
-	lines := command.New("git", "config", "-l", "--local", "--name").Output()
-	for _, line := range strings.Split(lines, "\n") {
-		if configRegexp.MatchString(line) {
-			result = append(result, line)
-		}
-	}
-	return
-}
-
-func hasConfigurationValue(location, key string) bool {
-	return command.New("git", "config", "-l", "--"+location, "--name").OutputContainsLine(key)
+	return configMap.KeysMatching(re)
 }
 
 func setConfigurationValue(key, value string) {
 	command.New("git", "config", key, value).Run()
+	configMap.Set(key, value)
 }
 
 func setGlobalConfigurationValue(key, value string) {
 	command.New("git", "config", "--global", key, value).Run()
+	globalConfigMap.Set(key, value)
+	configMap.Reset() // Need to reset config in case it was inheriting
 }
 
 func removeConfigurationValue(key string) {
 	command.New("git", "config", "--unset", key).Run()
+	configMap.Delete(key)
+}
+
+// Remotes are cached in order to minimize the number of git commands run
+var remotes []string
+var remotesInitialized bool
+
+func getRemotes() []string {
+	if !remotesInitialized {
+		remotes = strings.Split(command.New("git", "remote").Output(), "\n")
+		remotesInitialized = true
+	}
+	return remotes
+}
+
+// Init
+
+func init() {
+	configMap = NewConfigMap(false)
+	globalConfigMap = NewConfigMap(true)
 }

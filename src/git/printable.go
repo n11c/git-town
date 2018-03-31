@@ -1,6 +1,7 @@
 package git
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -25,15 +26,17 @@ func GetPrintablePerennialBranches() string {
 	return output
 }
 
-// GetPrintableHackPushFlag returns a user printable hack push flag
-func GetPrintableHackPushFlag() string {
-	return strconv.FormatBool(ShouldHackPush())
+// GetPrintableNewBranchPushFlag returns a user printable new branch push flag
+func GetPrintableNewBranchPushFlag() string {
+	return strconv.FormatBool(ShouldNewBranchPush())
 }
 
 // GetPrintableBranchTree returns a user printable branch tree
 func GetPrintableBranchTree(branchName string) (result string) {
 	result += branchName
-	for _, childBranch := range GetChildBranches(branchName) {
+	childBranches := GetChildBranches(branchName)
+	sort.Strings(childBranches)
+	for _, childBranch := range childBranches {
 		result += "\n" + util.Indent(GetPrintableBranchTree(childBranch), 1)
 	}
 	return
