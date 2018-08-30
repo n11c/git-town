@@ -46,19 +46,27 @@ please use the manual install and ensure your Git version is 2.7.0 or higher.</e
 <li>Run <code>dpkg -i /path/to/debfile</code></li>
 </ul>
 </li>
-<li>Uninstall: run <code>apt-get remove git-town</code></li>
+<li>Uninstall: run <code>apt-get remove gittown</code></li>
+</ul>
+<hr>
+<h1>Windows</h1><ul>
+<li>Install / Update:<ul>
+<li>Download the 32-bit or 64-bit executable for Windows from the latest release <a href="https://github.com/Originate/git-town/releases">here</a>.</li>
+<li>Put the file into the path and then Git will run it.</li>
+</ul>
+</li>
 </ul>
 <hr>
 <h1>Manual</h1><ul>
 <li>Install: download the Git Town binary for your platform from the
 <a href="https://github.com/Originate/git-town/releases">releases page</a>,
-rename it to <code>git-town</code>,
+rename it to <code>git-town</code>, make it executable with <code>chmod +x git-town</code>
 and put it somewhere in your <code>$PATH</code></li>
 <li>Update: install the new version over the old version</li>
 <li>Uninstall:<ul>
 <li>remove Git Town&#39;s aliases: <code>git town alias false</code></li>
 <li>remove the Git Town configuration from your repositories:
-in each repo, run <code>git town config --reset</code></li>
+in each repo, run <code>git town config reset</code></li>
 <li>delete the <code>git-town</code> binary from your hard drive</li>
 </ul>
 </li>
@@ -68,8 +76,8 @@ in each repo, run <code>git town config --reset</code></li>
 <li>for <a href="http://fishshell.com">Fish shell</a>: <code>git town install-fish-autocompletion</code></li>
 </ul>
 <h4>Notifications about new releases</h4><ul>
-<li>Subscribe to our
-<a href="https://github.com/Originate/git-town/releases.atom">
+<li>Subscribe to our<a href="https://github.com/Originate/git-town/releases.atom">
 release feed <i class="ion-social-rss accent-color"></i></a> to never miss a new release!
-If you prefer email notifications, please try <a href="https://sibbell.com">sibbell.com</a>.</li>
+If you prefer email notifications, please try [sibbell.com](https://sibbell.com).
+</li>
 </ul></main></body></html>
