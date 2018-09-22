@@ -6,7 +6,6 @@ import (
 	"github.com/Originate/git-town/src/steps"
 	"github.com/Originate/git-town/src/steps/listbuilder"
 	"github.com/Originate/git-town/src/util"
-	"github.com/davecgh/go-spew/spew"
 
 	"github.com/spf13/cobra"
 )
@@ -31,7 +30,6 @@ and brings over all uncommitted changes to the new feature branch.`,
 		container := GetContainer()
 		exit.If(container.Invoke(func(appendStepListBuilderService listbuilder.IAppendStepListBuilderService, runService steps.IRunService) {
 			stepList := appendStepListBuilderService.GetAppendStepList(args)
-			spew.Dump(stepList)
 			runState := steps.NewRunState("append", stepList)
 			runService.Run(runState)
 		}))

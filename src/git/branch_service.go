@@ -226,5 +226,5 @@ func (b *branchService) getRemoteBranches() []string {
 		b.remoteBranches = strings.Split(command.New("git", "branch", "-r").Output(), "\n")
 		b.remoteBranchesInitialized = true
 	}
-	return remoteBranches
+	return b.remoteBranches
 }
