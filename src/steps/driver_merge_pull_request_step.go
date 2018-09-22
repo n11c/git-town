@@ -3,8 +3,6 @@ package steps
 import (
 	"github.com/Originate/exit"
 	"github.com/Originate/git-town/src/drivers"
-	"github.com/Originate/git-town/src/git"
-	"github.com/Originate/git-town/src/script"
 )
 
 // DriverMergePullRequestStep squash merges the branch with the given name into the current branch
@@ -19,7 +17,7 @@ type DriverMergePullRequestStep struct {
 }
 
 // CreateAbortStep returns the abort step for this step.
-func (step *DriverMergePullRequestStep) CreateAbortStep() Step {
+func (step *DriverMergePullRequestStep) CreateAbortStep(deps *StepDependencies) Step {
 	if step.enteredEmptyCommitMessage {
 		return &DiscardOpenChangesStep{}
 	}
@@ -27,7 +25,7 @@ func (step *DriverMergePullRequestStep) CreateAbortStep() Step {
 }
 
 // CreateUndoStepAfterRun returns the undo step for this step after it is run.
-func (step *DriverMergePullRequestStep) CreateUndoStepAfterRun() Step {
+func (step *DriverMergePullRequestStep) CreateUndoStepAfterRun(deps *StepDependencies) Step {
 	return &RevertCommitStep{Sha: step.mergeSha}
 }
 
@@ -41,20 +39,20 @@ func (step *DriverMergePullRequestStep) GetAutomaticAbortErrorMessage() string {
 }
 
 // Run executes this step.
-func (step *DriverMergePullRequestStep) Run() error {
+func (step *DriverMergePullRequestStep) Run(deps *StepDependencies) error {
 	commitMessage := step.CommitMessage
 	if commitMessage == "" {
 		// Allow the user to enter the commit message as if shipping without a driver
 		// then revert the commit since merging via the driver will perform the actual squash merge
 		step.enteredEmptyCommitMessage = true
-		script.SquashMerge(step.BranchName)
-		git.CommentOutSquashCommitMessage(step.DefaultCommitMessage + "\n\n")
-		err := script.RunCommand("git", "commit")
+		deps.ScriptService.SquashMerge(step.BranchName)
+		deps.GitSquashMergeService.CommentOutSquashCommitMessage(step.DefaultCommitMessage + "\n\n")
+		err := deps.ScriptService.RunCommand("git", "commit")
 		if err != nil {
 			return err
 		}
-		commitMessage = git.GetLastCommitMessage()
-		err = script.RunCommand("git", "reset", "--hard", "HEAD~1")
+		commitMessage = deps.GitLogService.GetLastCommitMessage()
+		err = deps.ScriptService.RunCommand("git", "reset", "--hard", "HEAD~1")
 		exit.IfWrap(err, "Error resetting the main branch")
 		step.enteredEmptyCommitMessage = false
 	}
@@ -63,7 +61,7 @@ func (step *DriverMergePullRequestStep) Run() error {
 		Branch:        step.BranchName,
 		CommitMessage: commitMessage,
 		LogRequests:   true,
-		ParentBranch:  git.GetCurrentBranchName(),
+		ParentBranch:  deps.GitCurrentBranchService.GetCurrentBranchName(),
 	})
 	return step.mergeError
 }

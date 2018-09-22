@@ -12,12 +12,12 @@ type CheckoutBranchStep struct {
 }
 
 // CreateUndoStepBeforeRun returns the undo step for this step before it is run.
-func (step *CheckoutBranchStep) CreateUndoStepBeforeRun() Step {
-	return &CheckoutBranchStep{BranchName: git.GetCurrentBranchName()}
+func (step *CheckoutBranchStep) CreateUndoStepBeforeRun(deps *StepDependencies) Step {
+	return &CheckoutBranchStep{BranchName: deps.GitCurrentBranchService.GetCurrentBranchName()}
 }
 
 // Run executes this step.
-func (step *CheckoutBranchStep) Run() error {
+func (step *CheckoutBranchStep) Run(deps *StepDependencies) error {
 	if git.GetCurrentBranchName() != step.BranchName {
 		err := script.RunCommand("git", "checkout", step.BranchName)
 		if err == nil {

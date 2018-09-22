@@ -3,8 +3,6 @@ package steps
 import (
 	"errors"
 	"fmt"
-
-	"github.com/Originate/git-town/src/git"
 )
 
 // EnsureHasShippableChangesStep asserts that the branch has unique changes not on the main branch
@@ -20,8 +18,8 @@ func (step *EnsureHasShippableChangesStep) GetAutomaticAbortErrorMessage() strin
 }
 
 // Run executes this step.
-func (step *EnsureHasShippableChangesStep) Run() error {
-	if !git.HasShippableChanges(step.BranchName) {
+func (step *EnsureHasShippableChangesStep) Run(deps *StepDependencies) error {
+	if !deps.GitStatusService.HasShippableChanges(step.BranchName) {
 		return errors.New("no shippable changes")
 	}
 	return nil

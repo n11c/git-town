@@ -5,22 +5,22 @@ package steps
 type NoOpStep struct{}
 
 // CreateAbortStep returns the abort step for this step.
-func (step *NoOpStep) CreateAbortStep() Step {
+func (step *NoOpStep) CreateAbortStep(deps *StepDependencies) Step {
 	return &NoOpStep{}
 }
 
 // CreateContinueStep returns the continue step for this step.
-func (step *NoOpStep) CreateContinueStep() Step {
+func (step *NoOpStep) CreateContinueStep(deps *StepDependencies) Step {
 	return &NoOpStep{}
 }
 
 // CreateUndoStepBeforeRun returns the undo step for this step before it is run.
-func (step *NoOpStep) CreateUndoStepBeforeRun() Step {
+func (step *NoOpStep) CreateUndoStepBeforeRun(deps *StepDependencies) Step {
 	return &NoOpStep{}
 }
 
 // CreateUndoStepAfterRun returns the undo step for this step after it is run.
-func (step *NoOpStep) CreateUndoStepAfterRun() Step {
+func (step *NoOpStep) CreateUndoStepAfterRun(deps *StepDependencies) Step {
 	return &NoOpStep{}
 }
 
@@ -31,7 +31,7 @@ func (step *NoOpStep) GetAutomaticAbortErrorMessage() string {
 }
 
 // Run executes this step.
-func (step *NoOpStep) Run() error {
+func (step *NoOpStep) Run(deps *StepDependencies) error {
 	return nil
 }
 

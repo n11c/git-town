@@ -1,10 +1,5 @@
 package steps
 
-import (
-	"github.com/Originate/git-town/src/git"
-	"github.com/Originate/git-town/src/script"
-)
-
 // MergeBranchStep merges the branch with the given name into the current branch
 type MergeBranchStep struct {
 	NoOpStep
@@ -12,21 +7,21 @@ type MergeBranchStep struct {
 }
 
 // CreateAbortStep returns the abort step for this step.
-func (step *MergeBranchStep) CreateAbortStep() Step {
+func (step *MergeBranchStep) CreateAbortStep(deps *StepDependencies) Step {
 	return &AbortMergeBranchStep{}
 }
 
 // CreateContinueStep returns the continue step for this step.
-func (step *MergeBranchStep) CreateContinueStep() Step {
+func (step *MergeBranchStep) CreateContinueStep(deps *StepDependencies) Step {
 	return &ContinueMergeBranchStep{}
 }
 
 // CreateUndoStepBeforeRun returns the undo step for this step before it is run.
-func (step *MergeBranchStep) CreateUndoStepBeforeRun() Step {
-	return &ResetToShaStep{Hard: true, Sha: git.GetCurrentSha()}
+func (step *MergeBranchStep) CreateUndoStepBeforeRun(deps *StepDependencies) Step {
+	return &ResetToShaStep{Hard: true, Sha: deps.GitShaService.GetCurrentSha()}
 }
 
 // Run executes this step.
-func (step *MergeBranchStep) Run() error {
-	return script.RunCommand("git", "merge", "--no-edit", step.BranchName)
+func (step *MergeBranchStep) Run(deps *StepDependencies) error {
+	return deps.ScriptService.RunCommand("git", "merge", "--no-edit", step.BranchName)
 }

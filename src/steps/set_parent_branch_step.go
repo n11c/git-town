@@ -1,7 +1,5 @@
 package steps
 
-import "github.com/Originate/git-town/src/git"
-
 // SetParentBranchStep registers the branch with the given name as a parent
 // of the branch with the other given name.
 type SetParentBranchStep struct {
@@ -11,8 +9,8 @@ type SetParentBranchStep struct {
 }
 
 // CreateUndoStepBeforeRun returns the undo step for this step before it is run.
-func (step *SetParentBranchStep) CreateUndoStepBeforeRun() Step {
-	oldParent := git.GetParentBranch(step.BranchName)
+func (step *SetParentBranchStep) CreateUndoStepBeforeRun(deps *StepDependencies) Step {
+	oldParent := deps.GitConfigService.GetParentBranch(step.BranchName)
 	if oldParent == "" {
 		return &DeleteParentBranchStep{BranchName: step.BranchName}
 	}
@@ -20,7 +18,7 @@ func (step *SetParentBranchStep) CreateUndoStepBeforeRun() Step {
 }
 
 // Run executes this step.
-func (step *SetParentBranchStep) Run() error {
-	git.SetParentBranch(step.BranchName, step.ParentBranchName)
+func (step *SetParentBranchStep) Run(deps *StepDependencies) error {
+	deps.GitConfigService.SetParentBranch(step.BranchName, step.ParentBranchName)
 	return nil
 }

@@ -1,7 +1,5 @@
 package steps
 
-import "github.com/Originate/git-town/src/script"
-
 // RevertCommitStep reverts the commit with the given sha.
 type RevertCommitStep struct {
 	NoOpStep
@@ -9,6 +7,6 @@ type RevertCommitStep struct {
 }
 
 // Run executes this step.
-func (step *RevertCommitStep) Run() error {
-	return script.RunCommand("git", "revert", step.Sha)
+func (step *RevertCommitStep) Run(deps *StepDependencies) error {
+	return deps.ScriptService.RunCommand("git", "revert", step.Sha)
 }

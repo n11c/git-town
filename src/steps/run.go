@@ -14,6 +14,7 @@ import (
 // Run runs the Git Town command described by the given state
 // nolint: gocyclo
 func Run(runState *RunState) {
+	stepDependencies := &StepDependencies{}
 	for {
 		step := runState.RunStepList.Pop()
 		if step == nil {
@@ -32,16 +33,16 @@ func Run(runState *RunState) {
 			runState.AddPushBranchStepAfterCurrentBranchSteps()
 			continue
 		}
-		undoStepBeforeRun := step.CreateUndoStepBeforeRun()
-		err := step.Run()
+		undoStepBeforeRun := step.CreateUndoStepBeforeRun(stepDependencies)
+		err := step.Run(stepDependencies)
 		if err != nil {
-			runState.AbortStepList.Append(step.CreateAbortStep())
+			runState.AbortStepList.Append(step.CreateAbortStep(stepDependencies))
 			if step.ShouldAutomaticallyAbortOnError() {
 				abortRunState := runState.CreateAbortRunState()
 				Run(&abortRunState)
 				util.ExitWithErrorMessage(step.GetAutomaticAbortErrorMessage())
 			} else {
-				runState.RunStepList.Prepend(step.CreateContinueStep())
+				runState.RunStepList.Prepend(step.CreateContinueStep(stepDependencies))
 				runState.MarkAsUnfinished()
 				if runState.Command == "sync" && !(git.IsRebaseInProgress() && git.IsMainBranch(git.GetCurrentBranchName())) {
 					runState.UnfinishedDetails.CanSkip = true
@@ -50,7 +51,7 @@ func Run(runState *RunState) {
 				exitWithMessages(runState.UnfinishedDetails.CanSkip)
 			}
 		}
-		undoStepAfterRun := step.CreateUndoStepAfterRun()
+		undoStepAfterRun := step.CreateUndoStepAfterRun(stepDependencies)
 		runState.UndoStepList.Prepend(undoStepBeforeRun)
 		runState.UndoStepList.Prepend(undoStepAfterRun)
 	}

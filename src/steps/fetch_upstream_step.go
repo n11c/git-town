@@ -1,9 +1,5 @@
 package steps
 
-import (
-	"github.com/Originate/git-town/src/script"
-)
-
 // FetchUpstreamStep brings the Git history of the local repository
 // up to speed with activities that happened in the upstream remote.
 type FetchUpstreamStep struct {
@@ -12,6 +8,6 @@ type FetchUpstreamStep struct {
 }
 
 // Run executes this step.
-func (step *FetchUpstreamStep) Run() error {
-	return script.RunCommand("git", "fetch", "upstream", step.BranchName)
+func (step *FetchUpstreamStep) Run(deps *StepDependencies) error {
+	return deps.ScriptService.RunCommand("git", "fetch", "upstream", step.BranchName)
 }

@@ -1,5 +1,5 @@
-hash: f5bd1db8ca8e8982e8cf72d287a3f662d6bbab1befef075404a9a35ed6a6a668
-updated: 2018-04-09T10:42:46.678258579-07:00
+hash: 54c757330afa82b3d59e7b4c292985758c9e480c2ef74a25fa2a484a3b5fd35e
+updated: 2018-09-22T10:09:12.729004618-06:00
 imports:
 - name: github.com/acarl005/stripansi
   version: 5a71ef0e047df0427e87a79f27009029921f1f9b
@@ -39,6 +39,8 @@ imports:
   version: 1ce0cc6db4029d97571db82f85092fccedb572ce
 - name: github.com/spf13/viper
   version: 25b30aa063fc18e48662b86996252eabdcf2f0c7
+- name: go.uber.org/dig
+  version: 27eb30e15ef3e7f67cd86f2b65c618e3e308c104
 - name: golang.org/x/net
   version: f5dfe339be1d06f81b22525fe34671ee7d2c8904
   subpackages:

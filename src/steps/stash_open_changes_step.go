@@ -1,24 +1,20 @@
 package steps
 
-import (
-	"github.com/Originate/git-town/src/script"
-)
-
 // StashOpenChangesStep stores all uncommitted changes on the Git stash.
 type StashOpenChangesStep struct {
 	NoOpStep
 }
 
 // CreateUndoStepBeforeRun returns the undo step for this step before it is run.
-func (step *StashOpenChangesStep) CreateUndoStepBeforeRun() Step {
+func (step *StashOpenChangesStep) CreateUndoStepBeforeRun(deps *StepDependencies) Step {
 	return &RestoreOpenChangesStep{}
 }
 
 // Run executes this step.
-func (step *StashOpenChangesStep) Run() error {
-	err := script.RunCommand("git", "add", "-A")
+func (step *StashOpenChangesStep) Run(deps *StepDependencies) error {
+	err := deps.ScriptService.RunCommand("git", "add", "-A")
 	if err != nil {
 		return err
 	}
-	return script.RunCommand("git", "stash")
+	return deps.ScriptService.RunCommand("git", "stash")
 }

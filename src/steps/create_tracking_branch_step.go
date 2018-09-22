@@ -1,9 +1,5 @@
 package steps
 
-import (
-	"github.com/Originate/git-town/src/script"
-)
-
 // CreateTrackingBranchStep pushes the current branch up to origin
 // and marks it as tracking the current branch.
 type CreateTrackingBranchStep struct {
@@ -12,11 +8,11 @@ type CreateTrackingBranchStep struct {
 }
 
 // CreateUndoStepBeforeRun returns the undo step for this step before it is run.
-func (step *CreateTrackingBranchStep) CreateUndoStepBeforeRun() Step {
+func (step *CreateTrackingBranchStep) CreateUndoStepBeforeRun(deps *StepDependencies) Step {
 	return &DeleteRemoteBranchStep{BranchName: step.BranchName}
 }
 
 // Run executes this step.
-func (step *CreateTrackingBranchStep) Run() error {
-	return script.RunCommand("git", "push", "-u", "origin", step.BranchName)
+func (step *CreateTrackingBranchStep) Run(deps *StepDependencies) error {
+	return deps.ScriptService.RunCommand("git", "push", "-u", "origin", step.BranchName)
 }

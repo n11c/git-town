@@ -1,11 +1,5 @@
 package steps
 
-import (
-	"github.com/Originate/git-town/src/git"
-	"github.com/Originate/git-town/src/prompt"
-	"github.com/Originate/git-town/src/script"
-)
-
 // SquashMergeBranchStep squash merges the branch with the given name into the current branch
 type SquashMergeBranchStep struct {
 	NoOpStep
@@ -14,13 +8,13 @@ type SquashMergeBranchStep struct {
 }
 
 // CreateAbortStep returns the abort step for this step.
-func (step *SquashMergeBranchStep) CreateAbortStep() Step {
+func (step *SquashMergeBranchStep) CreateAbortStep(deps *StepDependencies) Step {
 	return &DiscardOpenChangesStep{}
 }
 
 // CreateUndoStepAfterRun returns the undo step for this step after it is run.
-func (step *SquashMergeBranchStep) CreateUndoStepAfterRun() Step {
-	return &RevertCommitStep{Sha: git.GetCurrentSha()}
+func (step *SquashMergeBranchStep) CreateUndoStepAfterRun(deps *StepDependencies) Step {
+	return &RevertCommitStep{Sha: deps.GitShaService.GetCurrentSha()}
 }
 
 // GetAutomaticAbortErrorMessage returns the error message to display when this step
@@ -30,18 +24,18 @@ func (step *SquashMergeBranchStep) GetAutomaticAbortErrorMessage() string {
 }
 
 // Run executes this step.
-func (step *SquashMergeBranchStep) Run() error {
-	script.SquashMerge(step.BranchName)
+func (step *SquashMergeBranchStep) Run(deps *StepDependencies) error {
+	deps.ScriptService.SquashMerge(step.BranchName)
 	commitCmd := []string{"git", "commit"}
 	if step.CommitMessage != "" {
 		commitCmd = append(commitCmd, "-m", step.CommitMessage)
 	}
-	author := prompt.GetSquashCommitAuthor(step.BranchName)
-	if author != git.GetLocalAuthor() {
+	author := deps.SquashCommitAuthorPromptService.GetSquashCommitAuthor(step.BranchName)
+	if author != deps.GitUserService.GetLocalAuthor() {
 		commitCmd = append(commitCmd, "--author", author)
 	}
-	git.CommentOutSquashCommitMessage("")
-	return script.RunCommand(commitCmd...)
+	deps.GitSquashMergeService.CommentOutSquashCommitMessage("")
+	return deps.ScriptService.RunCommand(commitCmd...)
 }
 
 // ShouldAutomaticallyAbortOnError returns whether this step should cause the command to

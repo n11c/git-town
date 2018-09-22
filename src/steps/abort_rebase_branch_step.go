@@ -1,9 +1,5 @@
 package steps
 
-import (
-	"github.com/Originate/git-town/src/script"
-)
-
 // AbortRebaseBranchStep represents aborting on ongoing merge conflict.
 // This step is used in the abort scripts for Git Town commands.
 type AbortRebaseBranchStep struct {
@@ -11,6 +7,6 @@ type AbortRebaseBranchStep struct {
 }
 
 // Run executes this step.
-func (step *AbortRebaseBranchStep) Run() error {
-	return script.RunCommand("git", "rebase", "--abort")
+func (step *AbortRebaseBranchStep) Run(deps *StepDependencies) error {
+	return deps.ScriptService.RunCommand("git", "rebase", "--abort")
 }

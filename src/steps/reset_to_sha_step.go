@@ -1,10 +1,5 @@
 package steps
 
-import (
-	"github.com/Originate/git-town/src/git"
-	"github.com/Originate/git-town/src/script"
-)
-
 // ResetToShaStep undoes all commits on the current branch
 // all the way until the given SHA.
 type ResetToShaStep struct {
@@ -14,8 +9,8 @@ type ResetToShaStep struct {
 }
 
 // Run executes this step.
-func (step *ResetToShaStep) Run() error {
-	if step.Sha == git.GetCurrentSha() {
+func (step *ResetToShaStep) Run(deps *StepDependencies) error {
+	if step.Sha == deps.GitShaService.GetCurrentSha() {
 		return nil
 	}
 	cmd := []string{"git", "reset"}
@@ -23,5 +18,5 @@ func (step *ResetToShaStep) Run() error {
 		cmd = append(cmd, "--hard")
 	}
 	cmd = append(cmd, step.Sha)
-	return script.RunCommand(cmd...)
+	return deps.ScriptService.RunCommand(cmd...)
 }

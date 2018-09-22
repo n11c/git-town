@@ -1,3 +1,4 @@
+@debug
 Feature: Appending a branch to a feature branch
 
   As a developer working on a feature branch and coming across a number of changes I want to commit independently
