@@ -1,17 +1,15 @@
 .DEFAULT_GOAL := spec
-
+date := $(shell TZ=UTC date -u '+%Y-%m-%d')
 
 build:  # builds for the current platform
-	go install
+	go install -ldflags "-X github.com/Originate/git-town/src/cmd.version=v0.0.0-test -X github.com/Originate/git-town/src/cmd.buildDate=today"
 
 build-release: cross-compile  # builds the artifacts for a new release
 	package/debian/make_deb.sh
 
 cross-compile:  # builds the binary for all platforms
 	go get github.com/mitchellh/gox
-	timestamp=$(TZ=UTC date -u '+%Y-%m-%dT%H:%M:%SZ')
-	sha=$(git rev-parse HEAD)
-	gox -ldflags "-X github.com/Originate/git-town/cmd.Version=$TRAVIS_TAG -X github.com/Originate/git-town/cmd.BuildTime=$timestamp) -X github.com/Originate/git-town/cmd.GitHash=$sha" \
+	gox -ldflags "-X github.com/Originate/git-town/src/cmd.version=${TRAVIS_TAG} -X github.com/Originate/git-town/src/cmd.buildDate=${date}" \
 			-output "dist/{{.Dir}}-{{.OS}}-{{.Arch}}"
 
 cuke: build  # runs the feature tests
@@ -38,7 +36,7 @@ fix-cucumber:  # auto-fixes all Cucumber lint issues
 	bundle exec cucumber_lint --fix
 
 fix-markdown:  # auto-fixes all Markdown lint issues
-	prettier --write "{,!(vendor)/**/}*.md"
+	node_modules/.bin/prettier --write "{,!(vendor)/**/}*.md"
 
 fix-ruby:  # auto-fixes all Ruby lint issues
 	bundle exec rubocop --auto-correct
@@ -55,16 +53,16 @@ lint-go:  # lints the Go files
 	goimports -d src
 	gometalinter.v2
 
-lint-markdown:  # lints the Markdown files
-	node_modules/.bin/prettier -l '{,!(vendor)/**/}*.md'
+lint-markdown: build  # lints the Markdown files
+	node_modules/.bin/prettier -l "{,!(vendor)/**/}*.md"
 	node_modules/.bin/text-run --offline
 
 lint-ruby:  # lints the Ruby files
 	bundle exec rubocop
 
 setup:  # the setup steps necessary on developer machines
-	go get -u github.com/Masterminds/glide \
-					  gopkg.in/alecthomas/gometalinter.v2 \
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+	go get -u gopkg.in/alecthomas/gometalinter.v2 \
 					  github.com/onsi/ginkgo/ginkgo
 	gometalinter.v2 --install
 	bundle install
@@ -76,4 +74,4 @@ tests:  # runs the unit tests
 	ginkgo src/...
 
 update:  # updates all dependencies
-	glide up
+	dep ensure -update

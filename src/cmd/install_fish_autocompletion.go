@@ -13,7 +13,7 @@ import (
 
 var installFishAutocompletionCommand = &cobra.Command{
 	Use:   "install-fish-autocompletion",
-	Short: "Installs the autocompletion definition for Fish shell (http://fishshell.com)",
+	Short: "Installs the autocompletion definition for Fish shell",
 	Run: func(cmd *cobra.Command, args []string) {
 		installFishAutocompletion()
 	},
@@ -63,10 +63,6 @@ end
 # This is only enabled for commands that take branch names.
 # This is achieved through __fish_complete_git_town_command_takes_branch
 complete --command git --arguments "(git branch | tr -d '* ')" --no-files
-
-
-# Define autocompletion for command-line switches
-%s
 `
 
 type autocompleteDefinition struct {
