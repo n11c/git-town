@@ -5,13 +5,13 @@ const path = require("path")
 const util = require("util")
 const readFile = util.promisify(fs.readFile)
 
-module.exports = async function({ configuration, formatter, nodes }) {
-  const expected = nodes
+module.exports = async function(textrun) {
+  const expected = textrun.nodes
     .text()
     .replace(/make\s+/, "")
     .trim()
-  formatter.name(`verify Make command ${cyan(expected)} exists`)
-  const makefilePath = path.join(configuration.sourceDir, "Makefile")
+  textrun.name(`verify Make command ${cyan(expected)} exists`)
+  const makefilePath = path.join(textrun.configuration.sourceDir, "Makefile")
   const makefileContent = await readFile(makefilePath, "utf8")
   const commands = makefileContent
     .split(os.EOL)

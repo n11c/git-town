@@ -5,6 +5,7 @@ Creates a new feature branch as a direct child of the current branch.
 </blockquote>
 
 <a textrun="command-description">
+
 Syncs the current branch,
 forks a new feature branch with the given name off the current branch,
 makes the new branch a child of the current branch,
