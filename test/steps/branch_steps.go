@@ -62,4 +62,12 @@ func BranchSteps(suite *godog.Suite, fs *FeatureState) {
 	suite.Step(`^my repository has a feature branch named "([^"]*)"$`, func(branch string) error {
 		return fs.activeScenarioState.gitEnvironment.DeveloperRepo.CreateFeatureBranch(branch)
 	})
+
+	suite.Step(`^my repository has the branches "([^"]+)" and "([^"]+)"$`, func(branch1, branch2 string) error {
+		err := fs.activeScenarioState.gitEnvironment.DeveloperRepo.CreateFeatureBranch(branch1)
+		if err != nil {
+			return err
+		}
+		return fs.activeScenarioState.gitEnvironment.DeveloperRepo.CreateFeatureBranch(branch2)
+	})
 }
