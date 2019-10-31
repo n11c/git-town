@@ -23,9 +23,11 @@ func ConfigurationSteps(suite *godog.Suite, fs *FeatureState) {
 			return errors.Wrapf(err, "cannot parse %q into bool", value)
 		}
 		outcome := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration().SetNewBranchPush(b, false)
-		if outcome.Err() != nil {
-			return errors.Wrapf(err, "cannot set new-branch-push-flag configuration to %q: %s", value, outcome.Output())
-		}
-		return err
+		return outcome.Err()
+	})
+
+	suite.Step(`^the main branch is configured as "([^"]+)"$`, func(name string) error {
+		outcome := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration().SetMainBranch(name)
+		return outcome.Err()
 	})
 }
