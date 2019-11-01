@@ -64,7 +64,7 @@ func loadGitConfig(dir string, global bool) map[string]string {
 	} else {
 		cmdArgs = append(cmdArgs, "--local")
 	}
-	res := command.RunInDir(dir, "git", cmdArgs...)
+	res := command.RunWith(command.Options{Cmd: "git", Args: cmdArgs, Dir: dir})
 	if res.Err() != nil && strings.Contains(res.OutputSanitized(), "No such file or directory") {
 		return result
 	}
@@ -225,7 +225,7 @@ func (c *Configuration) GetRemoteOriginURL() string {
 			return mockRemoteURL
 		}
 	}
-	return command.RunInDir(c.localDir, "git", "remote", "get-url", "origin").OutputSanitized()
+	return command.RunWith(command.Options{Cmd: "git", Args: []string{"remote", "get-url", "origin"}, Dir: c.localDir}).OutputSanitized()
 }
 
 // GetURLHostname returns the hostname contained within the given Git URL.
@@ -312,18 +312,18 @@ func (c *Configuration) RemoveGitAlias(command string) *command.Result {
 
 func (c *Configuration) removeGlobalConfigValue(key string) *command.Result {
 	delete(c.globalConfigCache, key)
-	return command.RunInDir(c.localDir, "git", "config", "--global", "--unset", key)
+	return command.RunWith(command.Options{Cmd: "git", Args: []string{"config", "--global", "--unset", key}, Dir: c.localDir})
 }
 
 // removeLocalConfigurationValue deletes the configuration value with the given key from the local Git Town configuration.
 func (c *Configuration) removeLocalConfigValue(key string) {
-	command.RunInDir(c.localDir, "git", "config", "--unset", key)
+	command.RunWith(command.Options{Cmd: "git", Args: []string{"config", "--unset", key}, Dir: c.localDir})
 	delete(c.localConfigCache, key)
 }
 
 // RemoveLocalGitConfiguration removes all Git Town configuration
 func (c *Configuration) RemoveLocalGitConfiguration() {
-	command.RunInDir(c.localDir, "git", "config", "--remove-section", "git-town").OutputSanitized()
+	command.RunWith(command.Options{Cmd: "git", Args: []string{"config", "--remove-section", "git-town"}, Dir: c.localDir}).OutputSanitized()
 }
 
 // RemoveOutdatedConfiguration removes outdated Git Town configuration
@@ -337,13 +337,13 @@ func (c *Configuration) RemoveOutdatedConfiguration() {
 
 func (c *Configuration) setGlobalConfigValue(key, value string) *command.Result {
 	c.globalConfigCache[key] = value
-	return command.RunInDir(c.localDir, "git", "config", "--global", key, value)
+	return command.RunWith(command.Options{Cmd: "git", Args: []string{"config", "--global", key, value}, Dir: c.localDir})
 }
 
 // setConfigurationValue sets the local configuration with the given key to the given value.
 func (c *Configuration) setLocalConfigValue(key, value string) *command.Result {
 	c.localConfigCache[key] = value
-	return command.RunInDir(c.localDir, "git", "config", key, value)
+	return command.RunWith(command.Options{Cmd: "git", Args: []string{"config", key, value}, Dir: c.localDir})
 }
 
 // SetMainBranch marks the given branch as the main branch

@@ -75,51 +75,7 @@ func (runner *ShellRunner) hasTempShellOverrides() bool {
 // in this ShellRunner's directory.
 // Shell overrides will be used and removed when done.
 func (runner *ShellRunner) Run(name string, arguments ...string) (output string, err error) {
-	// create an environment with the temp shell overrides directory added to the PATH
-	customEnv := os.Environ()
-
-	// set HOME to the given global directory so that Git puts the global configuration there.
-	for i := range customEnv {
-		if strings.HasPrefix(customEnv[i], "HOME=") {
-			customEnv[i] = fmt.Sprintf("HOME=%s", runner.homeDir)
-		}
-	}
-
-	// enable shell overrides
-	if runner.hasTempShellOverrides() {
-		for i := range customEnv {
-			if strings.HasPrefix(customEnv[i], "PATH=") {
-				parts := strings.SplitN(customEnv[i], "=", 2)
-				parts[1] = runner.tempShellOverridesDir + ":" + parts[1]
-				customEnv[i] = strings.Join(parts, "=")
-				break
-			}
-		}
-		defer runner.RemoveTempShellOverrides()
-	}
-
-	// run the command inside the custom environment
-	outcome := command.RunDirEnv(runner.workingDir, customEnv, name, arguments...)
-	if Debug {
-		fmt.Println(path.Base(runner.workingDir), ">", name, strings.Join(arguments, " "))
-		fmt.Println(outcome.Output())
-	}
-	return outcome.Output(), outcome.Err()
-}
-
-// RunString runs the given command (including possible arguments)
-// in this ShellRunner's directory.
-// Shell overrides will be used and removed when done.
-//
-// The current implementation splits the string by space
-// and therefore only works for simple commands without quoted arguments.
-func (runner *ShellRunner) RunString(command string) (output string, err error) {
-	parts, err := shellquote.Split(command)
-	if err != nil {
-		return "", errors.Wrapf(err, "cannot split command: %q", command)
-	}
-	command, args := parts[0], parts[1:]
-	return runner.Run(command, args...)
+	return runner.RunWith(command.Options{Cmd: name, Args: arguments})
 }
 
 // RunMany runs all given commands in current directory.
@@ -135,4 +91,55 @@ func (runner *ShellRunner) RunMany(commands [][]string) error {
 		}
 	}
 	return nil
+}
+
+// RunString runs the given command (including possible arguments)
+// in this ShellRunner's directory.
+// Shell overrides will be used and removed when done.
+func (runner *ShellRunner) RunString(command string) (output string, err error) {
+	parts, err := shellquote.Split(command)
+	if err != nil {
+		return "", errors.Wrapf(err, "cannot split command %q", command)
+	}
+	command, args := parts[0], parts[1:]
+	return runner.Run(command, args...)
+}
+
+// RunWith runs the given command with the given options in this ShellRunner's directory.
+func (runner *ShellRunner) RunWith(opts command.Options) (output string, err error) {
+	// create an environment with the temp shell overrides directory added to the PATH
+	if opts.Env == nil {
+		opts.Env = os.Environ()
+	}
+
+	// set HOME to the given global directory so that Git puts the global configuration there.
+	for i := range opts.Env {
+		if strings.HasPrefix(opts.Env[i], "HOME=") {
+			opts.Env[i] = fmt.Sprintf("HOME=%s", runner.homeDir)
+		}
+	}
+
+	// enable shell overrides
+	if runner.hasTempShellOverrides() {
+		for i := range opts.Env {
+			if strings.HasPrefix(opts.Env[i], "PATH=") {
+				parts := strings.SplitN(opts.Env[i], "=", 2)
+				parts[1] = runner.tempShellOverridesDir + ":" + parts[1]
+				opts.Env[i] = strings.Join(parts, "=")
+				break
+			}
+		}
+		defer runner.RemoveTempShellOverrides()
+	}
+
+	// set the working dir
+	opts.Dir = runner.workingDir
+
+	// run the command inside the custom environment
+	outcome := command.RunWith(opts)
+	if Debug {
+		fmt.Println(path.Base(runner.workingDir), ">", opts.Cmd, strings.Join(opts.Args, " "))
+		fmt.Println(outcome.Output())
+	}
+	return outcome.Output(), outcome.Err()
 }

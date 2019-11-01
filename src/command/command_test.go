@@ -63,7 +63,7 @@ var _ = Describe("RunInDir", func() {
 		Expect(err).To(BeNil())
 		err = ioutil.WriteFile(path.Join(dirPath, "one"), []byte{}, 0744)
 		Expect(err).To(BeNil())
-		res := command.RunInDir(dirPath, "ls", "-1")
+		res := command.RunWith(command.Options{Cmd: "ls", Args: []string{"-1"}, Dir: dirPath})
 		Expect(res.OutputSanitized()).To(Equal("one"))
 	})
 })
