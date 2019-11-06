@@ -65,6 +65,7 @@ lint-cucumber:  # lints the Cucumber files
 
 lint-go:  # lints the Go files
 	golangci-lint run --enable-all -D dupl -D lll -D gochecknoglobals -D gochecknoinits -D goconst -D wsl src/... test/...
+	go mod verify
 
 lint-markdown: build  # lints the Markdown files
 	@find . -type f \( \
