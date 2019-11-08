@@ -143,8 +143,9 @@ func (repo *GitRepository) commitsInBranch(branch string, fields []string) (resu
 }
 
 // Configuration lazy-loads the Git-Town configuration for this repo.
-func (repo *GitRepository) Configuration() *git.Configuration {
-	if repo.configCache == nil {
+// if the parameter refresh is set, it re-loads the configuration.
+func (repo *GitRepository) Configuration(refresh ...bool) *git.Configuration {
+	if repo.configCache == nil || (len(refresh) == 1 && refresh[0]) {
 		repo.configCache = git.NewConfiguration(repo.Dir)
 	}
 	return repo.configCache

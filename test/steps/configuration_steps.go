@@ -1,6 +1,7 @@
 package steps
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/DATA-DOG/godog"
@@ -29,5 +30,24 @@ func ConfigurationSteps(suite *godog.Suite, fs *FeatureState) {
 	suite.Step(`^the main branch is configured as "([^"]+)"$`, func(name string) error {
 		outcome := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration().SetMainBranch(name)
 		return outcome.Err()
+	})
+
+	suite.Step(`^the main branch is now configured as "([^"]+)"$`, func(name string) error {
+		actual := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration(true).GetMainBranch()
+		if actual != name {
+			return fmt.Errorf("expected %q, got %q", name, actual)
+		}
+		return nil
+	})
+
+	suite.Step(`^the perennial branches are now configured as "([^"]+)"$`, func(name string) error {
+		actual := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration(true).GetPerennialBranches()
+		if len(actual) != 1 {
+			return fmt.Errorf("expeced 1 perennial branch, got %q", actual)
+		}
+		if actual[0] != name {
+			return fmt.Errorf("expected %q, got %q", name, actual)
+		}
+		return nil
 	})
 }
