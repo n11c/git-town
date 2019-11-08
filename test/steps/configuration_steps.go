@@ -2,7 +2,9 @@ package steps
 
 import (
 	"fmt"
+	"os/exec"
 	"strconv"
+	"strings"
 
 	"github.com/DATA-DOG/godog"
 	"github.com/pkg/errors"
@@ -10,6 +12,19 @@ import (
 
 // ConfigurationSteps defines Cucumber step implementations around configuration.
 func ConfigurationSteps(suite *godog.Suite, fs *FeatureState) {
+
+	suite.Step(`^Git Town is no longer configured for this repository$`, func() error {
+		output, err := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Run("git", "config", "--local", "--get-regex", "git-town")
+		exitError := err.(*exec.ExitError)
+		if exitError.ExitCode() != 1 {
+			return errors.New("git config should return exit code 1 if no matching configuration found")
+		}
+		if strings.TrimSpace(output) != "" {
+			return errors.Wrapf(err, "expeced no local Git Town configuration but got %q", output)
+		}
+		return nil
+	})
+
 	suite.Step(`^I haven\'t configured Git Town yet$`, func() error {
 		err := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration().DeleteMainBranchConfiguration()
 		if err != nil {
@@ -46,6 +61,19 @@ func ConfigurationSteps(suite *godog.Suite, fs *FeatureState) {
 			return fmt.Errorf("expected %q, got %q", name, actual)
 		}
 		return nil
+	})
+
+	suite.Step(`^the main branch name is not configured$`, func() error {
+		return fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration().DeleteMainBranchConfiguration()
+	})
+
+	suite.Step(`^the perennial branches are not configured$`, func() error {
+		return fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration().DeletePerennialBranchConfiguration()
+	})
+
+	suite.Step(`^the perennial branches are configured as "([^"]+)" and "([^"]+)"$`, func(branch1, branch2 string) error {
+		outcome := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration().AddToPerennialBranches(branch1, branch2)
+		return outcome.Err()
 	})
 
 	suite.Step(`^the perennial branches are now configured as "([^"]+)"$`, func(name string) error {
