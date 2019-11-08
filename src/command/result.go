@@ -44,6 +44,7 @@ func (c *Result) OutputSanitized() string {
 
 // Err returns the error that this command encountered.
 // Runs the command if it hasn't so far.
+// TODO: sort alphabetically
 func (c *Result) Err() error {
 	return c.err
 }
