@@ -86,4 +86,26 @@ func ConfigurationSteps(suite *godog.Suite, fs *FeatureState) {
 		}
 		return nil
 	})
+
+	suite.Step(`^the perennial branches are now configured as "([^"]+)" and "([^"]+)"$`, func(branch1, branch2 string) error {
+		actual := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration(true).GetPerennialBranches()
+		if len(actual) != 2 {
+			return fmt.Errorf("expeced 2 perennial branches, got %q", actual)
+		}
+		if actual[0] != branch1 {
+			return fmt.Errorf("expected %q, got %q", branch1, actual)
+		}
+		if actual[1] != branch2 {
+			return fmt.Errorf("expected %q, got %q", branch2, actual)
+		}
+		return nil
+	})
+
+	suite.Step(`^there are now no perennial branches$`, func() error {
+		actual := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration(true).GetPerennialBranches()
+		if len(actual) > 0 {
+			return fmt.Errorf("expeced no perennial branches, got %q", actual)
+		}
+		return nil
+	})
 }
