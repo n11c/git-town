@@ -95,10 +95,20 @@ func (c *Configuration) AddGitAlias(command string) *command.Result {
 	return c.setGlobalConfigValue("alias."+command, "town "+command)
 }
 
+// DeleteMainBranchConfiguration removes the configuration entry for the main branch name.
+func (c *Configuration) DeleteMainBranchConfiguration() error {
+	return c.removeLocalConfigValue("git-town.main-branch-name")
+}
+
 // DeleteParentBranch removes the parent branch entry for the given branch
 // from the Git configuration.
 func (c *Configuration) DeleteParentBranch(branchName string) {
 	c.removeLocalConfigValue("git-town-branch." + branchName + ".parent")
+}
+
+// DeletePerennialBranchConfiguration removes the configuration entry for the perennial branches.
+func (c *Configuration) DeletePerennialBranchConfiguration() error {
+	return c.removeLocalConfigValue("git-town.perennial-branch-names")
 }
 
 // EnsureIsFeatureBranch asserts that the given branch is a feature branch.
@@ -316,9 +326,10 @@ func (c *Configuration) removeGlobalConfigValue(key string) *command.Result {
 }
 
 // removeLocalConfigurationValue deletes the configuration value with the given key from the local Git Town configuration.
-func (c *Configuration) removeLocalConfigValue(key string) {
-	command.RunWith(command.Options{Cmd: "git", Args: []string{"config", "--unset", key}, Dir: c.localDir})
+func (c *Configuration) removeLocalConfigValue(key string) error {
+	result := command.RunWith(command.Options{Cmd: "git", Args: []string{"config", "--unset", key}, Dir: c.localDir})
 	delete(c.localConfigCache, key)
+	return result.Err()
 }
 
 // RemoveLocalGitConfiguration removes all Git Town configuration

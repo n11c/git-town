@@ -10,16 +10,16 @@ import (
 
 // PrintSteps defines Gherkin steps around printing things to the terminal.
 func PrintSteps(suite *godog.Suite, fs *FeatureState) {
-	suite.Step(`^it prints$`, func(expected *gherkin.DocString) error {
-		if !strings.Contains(fs.activeScenarioState.lastRunOutput, expected.Content) {
-			return fmt.Errorf("text not found:\n\nEXPECTED: %q\n\nACTUAL:\n\n%q", expected.Content, fs.activeScenarioState.lastRunOutput)
+	suite.Step(`^it does not print "([^\"]*)"$`, func(text string) error {
+		if strings.Contains(fs.activeScenarioState.lastRunOutput, text) {
+			return fmt.Errorf("text found: %q", text)
 		}
 		return nil
 	})
 
-	suite.Step(`^it does not print "([^\"]*)"$`, func(text string) error {
-		if strings.Contains(fs.activeScenarioState.lastRunOutput, text) {
-			return fmt.Errorf("text found: %q", text)
+	suite.Step(`^it prints$`, func(expected *gherkin.DocString) error {
+		if !strings.Contains(fs.activeScenarioState.lastRunOutput, expected.Content) {
+			return fmt.Errorf("text not found:\n\nEXPECTED: %q\n\nACTUAL:\n\n%q", expected.Content, fs.activeScenarioState.lastRunOutput)
 		}
 		return nil
 	})
@@ -30,6 +30,14 @@ func PrintSteps(suite *godog.Suite, fs *FeatureState) {
 		}
 		if fs.activeScenarioState.lastRunErr == nil {
 			return fmt.Errorf("expected error")
+		}
+		return nil
+	})
+
+	suite.Step(`^it prints the initial configuration prompt$`, func() error {
+		expected := "Git Town needs to be configured"
+		if !strings.Contains(fs.activeScenarioState.lastRunOutput, expected) {
+			return fmt.Errorf("text not found:\n\nEXPECTED: %q\n\nACTUAL:\n\n%q", expected, fs.activeScenarioState.lastRunOutput)
 		}
 		return nil
 	})

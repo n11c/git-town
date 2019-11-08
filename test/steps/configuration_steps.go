@@ -11,10 +11,18 @@ import (
 // ConfigurationSteps defines Cucumber step implementations around configuration.
 func ConfigurationSteps(suite *godog.Suite, fs *FeatureState) {
 	suite.Step(`^I haven\'t configured Git Town yet$`, func() error {
-		// NOTE: nothing to do here yet since we don't configure Git Town in Go specs at this point.
-		// In the future:
-		// - delete_main_branch_configuration
-		// - delete_perennial_branches_configuration
+		err := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration().DeleteMainBranchConfiguration()
+		if err != nil {
+			return errors.Wrap(err, "cannot delete main branch config")
+		}
+		return fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration().DeletePerennialBranchConfiguration()
+	})
+
+	suite.Step(`^my repo is now configured with no perennial branches$`, func() error {
+		branches := fs.activeScenarioState.gitEnvironment.DeveloperRepo.Configuration(true).GetPerennialBranches()
+		if len(branches) > 0 {
+			return fmt.Errorf("expected no perennial branches, got %q", branches)
+		}
 		return nil
 	})
 
